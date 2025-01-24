@@ -115,31 +115,37 @@
                     return response.json();
                 })
                 .then(data => {
-                    if (data && typeof data === 'object') {
-                        let resultHTML = '<h2>查询结果:</h2>';
-                        const fields = {
-                            name: '姓名',
-                            gender: '性别',
-                            sfz: '身份证',
-                            hr: '户籍地址',
-                            currentaddress: '现住址',
-                            dadname: '父亲姓名',
-                            dadfsz: '父亲身份证',
-                            dadphone: '父亲手机号',
-                            mamname: '母亲姓名',
-                            mamsfz: '母亲身份证',
-                            mamphone: '母亲手机号',
-                            id: 'ID',
-                            createdAt: '创建于',
-                            updatedAt: '更新于',
-                            version: '版本'
-                        };
+                    if (data && data.records && data.records.length > 0) {
+                        const record = data.records[0]; // 只取第一个记录
 
-                        for (const [key, label] of Object.entries(fields)) {
-                            if (data[key]) {
-                                resultHTML += `<div class="info-item"><span class="info-label">${label}:</span> ${data[key]}</div>`;
+                        let resultHTML = '<h2>查询结果:</h2>';
+                        const fields = [
+                            { key: 'name', label: '姓名' },
+                            { key: 'gender', label: '性别' },
+                            { key: 'sfz', label: '身份证' },
+                            { key: 'hr', label: '户籍地址' },
+                            { key: 'currentaddress', label: '现住址' },
+                            { key: 'dadname', label: '父亲姓名' },
+                            { key: 'dadsfz', label: '父亲身份证' },
+                            { key: 'dadphone', label: '父亲手机号' },
+                            { key: 'mamname', label: '母亲姓名' },
+                            { key: 'mamsfz', label: '母亲身份证' },
+                            { key: 'mamphone', label: '母亲手机号' },
+                            { key: 'id', label: 'ID' },
+                            { key: 'xata.createdAt', label: '创建于', isDate: true },
+                            { key: 'xata.updatedAt', label: '更新于', isDate: true },
+                            { key: 'xata.version', label: '版本' }
+                        ];
+
+                        fields.forEach(field => {
+                            let value = field.key.split('.').reduce((obj, key) => obj && obj[key], record);
+                            if (value && value !== '无权利查询') {
+                                if (field.isDate) {
+                                    value = new Date(value).toLocaleString(); // 格式化日期
+                                }
+                                resultHTML += `<div class="info-item"><span class="info-label">${field.label}:</span> ${value}</div>`;
                             }
-                        }
+                        });
 
                         resultDiv.innerHTML = resultHTML || '<p>未找到相关信息</p>';
                     } else {
