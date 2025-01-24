@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户信息查询</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        #result {
+            margin-top: 20px;
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .info-item {
+            background-color: #fff;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .info-label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .error {
+            color: #e74c3c;
+            background-color: #fadbd8;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>用户信息查询</h1>
+        <form id="userForm">
+            <label for="name">请输入姓名:</label>
+            <input type="text" id="name" name="name" required>
+            <button type="submit" id="submitBtn">查询</button>
+        </form>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('userForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const resultDiv = document.getElementById('result');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const apiUrl = `https://api.dbqz.xyz/dbqzsjk?name=${encodeURIComponent(name)}`;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '查询中...';
+            resultDiv.innerHTML = '';
+
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应不正确');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && typeof data === 'object') {
+                        let resultHTML = '<h2>查询结果:</h2>';
+                        const fields = {
+                            name: '姓名',
+                            gender: '性别',
+                            sfz: '身份证',
+                            hr: '户籍地址',
+                            currentaddress: '现住址',
+                            dadname: '父亲姓名',
+                            dadfsz: '父亲身份证',
+                            dadphone: '父亲手机号',
+                            mamname: '母亲姓名',
+                            mamsfz: '母亲身份证',
+                            mamphone: '母亲手机号',
+                            id: 'ID',
+                            createdAt: '创建于',
+                            updatedAt: '更新于',
+                            version: '版本'
+                        };
+
+                        for (const [key, label] of Object.entries(fields)) {
+                            if (data[key]) {
+                                resultHTML += `<div class="info-item"><span class="info-label">${label}:</span> ${data[key]}</div>`;
+                            }
+                        }
+
+                        resultDiv.innerHTML = resultHTML || '<p>未找到相关信息</p>';
+                    } else {
+                        throw new Error('查询结果格式错误');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    resultDiv.innerHTML = `<div class="error">查询出错: ${error.message}</div>`;
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '查询';
+                });
+        });
+    </script>
+</body>
+</html>
