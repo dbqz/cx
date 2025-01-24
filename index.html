@@ -116,7 +116,8 @@
                 })
                 .then(data => {
                     if (data && data.records && data.records.length > 0) {
-                        const record = data.records[0]; // 只取第一个记录
+                        const record = data.records[0]; // 获取返回的第一个记录
+                        const xata = record.xata; // 获取 xata 信息
 
                         let resultHTML = '<h2>查询结果:</h2>';
                         const fields = [
@@ -131,15 +132,27 @@
                             { key: 'mamname', label: '母亲姓名' },
                             { key: 'mamsfz', label: '母亲身份证' },
                             { key: 'mamphone', label: '母亲手机号' },
-                            { key: 'id', label: 'ID' },
-                            { key: 'xata.createdAt', label: '创建于', isDate: true },
-                            { key: 'xata.updatedAt', label: '更新于', isDate: true },
-                            { key: 'xata.version', label: '版本' }
+                            { key: 'id', label: 'ID' }
                         ];
 
+                        // 显示用户信息
                         fields.forEach(field => {
-                            let value = field.key.split('.').reduce((obj, key) => obj && obj[key], record);
+                            let value = record[field.key];
                             if (value && value !== '无权利查询') {
+                                resultHTML += `<div class="info-item"><span class="info-label">${field.label}:</span> ${value}</div>`;
+                            }
+                        });
+
+                        // 显示 xata 信息
+                        const xataFields = [
+                            { key: 'createdAt', label: '创建于', isDate: true },
+                            { key: 'updatedAt', label: '更新于', isDate: true },
+                            { key: 'version', label: '版本' }
+                        ];
+
+                        xataFields.forEach(field => {
+                            let value = xata[field.key];
+                            if (value) {
                                 if (field.isDate) {
                                     value = new Date(value).toLocaleString(); // 格式化日期
                                 }
